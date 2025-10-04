@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trading Agent Pro</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Lucide Icons as inline SVG components
+        const Brain = () => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+            </svg>
+        );
+
+        const Activity = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+        );
+
+        const Settings = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        );
+
+        const Target = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+            </svg>
+        );
+
+        const TrendingUp = ({ className }) => (
+            <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+            </svg>
+        );
+
+        const TrendingDown = ({ className }) => (
+            <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/>
+                <polyline points="16 17 22 17 22 11"/>
+            </svg>
+        );
+
+        const AlertCircle = ({ className }) => (
+            <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        );
+
+        const BarChart3 = ({ className }) => (
+            <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 3v18h18"/>
+                <path d="M18 17V9"/>
+                <path d="M13 17V5"/>
+                <path d="M8 17v-3"/>
+            </svg>
+        );
+
+        const Newspaper = ({ className }) => (
+            <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+                <path d="M18 14h-8"/>
+                <path d="M15 18h-5"/>
+                <path d="M10 6h8v4h-8V6Z"/>
+            </svg>
+        );
+
+        const AITradingAgent = () => {
+            const [apiKeys, setApiKeys] = useState(() => {
+                const saved = localStorage.getItem('tradingAgentAPIKeys');
+                return saved ? JSON.parse(saved) : {
+                    alphaVantage: '57YFLG1RWBJ1H2G0',
+                    fmp: 'tgTJNeJoiOv1x8STUcpspoUHqDHmplxr',
+                    newsApi: '20c0fbb748eb42b88f3eae5214d13fbc',
+                    anthropic: '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'
+                };
+            });
+
+            const [portfolio, setPortfolio] = useState(() => {
+                const saved = localStorage.getItem('tradingAgentPortfolio');
+                return saved ? JSON.parse(saved) : {
+                    capital: 100,
+                    riskPerTrade: 1,
+                    maxPositions: 5
+                };
+            });
+
+            const [signals, setSignals] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [watchlist, setWatchlist] = useState(() => {
+                const saved = localStorage.getItem('tradingAgentWatchlist');
+                return saved ? JSON.parse(saved) : [
+                    'AAPL', 'MSFT', 'NVDA', 'AMD', 'CRM',
+                    'AMZN', 'TSLA', 'NKE',
+                    'GOOGL', 'META',
+                    'JNJ', 'UNH', 'PFE',
+                    'JPM', 'BAC', 'V',
+                    'XOM', 'CVX',
+                    'BA', 'CAT',
+                    'PG', 'KO',
+                    'FCX', 'NEE'
+                ];
+            });
+
+            const [newTicker, setNewTicker] = useState('');
+            const [activeTab, setActiveTab] = useState('signals');
+            const [scanProgress, setScanProgress] = useState(0);
+            const [aiLogs, setAiLogs] = useState([]);
+            const [proxyStatus, setProxyStatus] = useState('checking');
+
+            // Check proxy server on mount
+            React.useEffect(() => {
+                checkProxyServer();
+            }, []);
+
+            const checkProxyServer = async () => {
+                try {
+                    const response = await fetch('http://localhost:3000/health');
+                    const data = await response.json();
+                    if (data.status === 'ok') {
+                        setProxyStatus('connected');
+                    }
+                } catch (error) {
+                    setProxyStatus('disconnected');
+                }
+            };
+
+            // Save to localStorage when values change
+            React.useEffect(() => {
+                localStorage.setItem('tradingAgentAPIKeys', JSON.stringify(apiKeys));
+            }, [apiKeys]);
+
+            React.useEffect(() => {
+                localStorage.setItem('tradingAgentPortfolio', JSON.stringify(portfolio));
+            }, [portfolio]);
+
+            React.useEffect(() => {
+                localStorage.setItem('tradingAgentWatchlist', JSON.stringify(watchlist));
+            }, [watchlist]);
+
+            const addAiLog = (message, type = 'info') => {
+                setAiLogs(prev => [...prev, { message, type, timestamp: new Date().toLocaleTimeString() }]);
+            };
+
+            // Technical calculations
+            const calculateRSI = (prices, period = 14) => {
+                if (prices.length < period + 1) return 50;
+                let gains = 0, losses = 0;
+                for (let i = prices.length - period; i < prices.length; i++) {
+                    const change = prices[i] - prices[i - 1];
+                    if (change > 0) gains += change;
+                    else losses -= change;
+                }
+                const avgGain = gains / period;
+                const avgLoss = losses / period;
+                const rs = avgGain / (avgLoss || 1);
+                return 100 - (100 / (1 + rs));
+            };
+
+            const calculateSMA = (prices, period) => {
+                if (prices.length < period) return prices[prices.length - 1];
+                const slice = prices.slice(-period);
+                return slice.reduce((a, b) => a + b, 0) / period;
+            };
+
+            const calculateBollingerBands = (prices, period = 20, stdDev = 2) => {
+                const sma = calculateSMA(prices, period);
+                const slice = prices.slice(-period);
+                const variance = slice.reduce((sum, price) => sum + Math.pow(price - sma, 2), 0) / period;
+                const std = Math.sqrt(variance);
+                return {
+                    upper: sma + (stdDev * std),
+                    middle: sma,
+                    lower: sma - (stdDev * std)
+                };
+            };
+
+            const calculateEMA = (prices, period) => {
+                if (prices.length < period) return prices[prices.length - 1];
+                const multiplier = 2 / (period + 1);
+                let ema = prices.slice(-period).reduce((a, b) => a + b, 0) / period;
+                for (let i = prices.length - period; i < prices.length; i++) {
+                    ema = (prices[i] - ema) * multiplier + ema;
+                }
+                return ema;
+            };
+
+            const calculateMACD = (prices) => {
+                const ema12 = calculateEMA(prices, 12);
+                const ema26 = calculateEMA(prices, 26);
+                return ema12 - ema26;
+            };
+
+            const calculateATR = (highs, lows, closes) => {
+                let tr = [];
+                for (let i = 1; i < highs.length; i++) {
+                    const hl = highs[i] - lows[i];
+                    const hc = Math.abs(highs[i] - closes[i - 1]);
+                    const lc = Math.abs(lows[i] - closes[i - 1]);
+                    tr.push(Math.max(hl, hc, lc));
+                }
+                return tr.reduce((a, b) => a + b, 0) / tr.length;
+            };
+
+            // Fetch market data through proxy
+            const fetchMarketData = async (ticker) => {
+                try {
+                    addAiLog(`Fetching market data for ${ticker}...`);
+                    
+                    const params = new URLSearchParams({
+                        function: 'TIME_SERIES_DAILY',
+                        symbol: ticker,
+                        apikey: apiKeys.alphaVantage,
+                        outputsize: 'compact'
+                    });
+                    
+                    const timeSeriesUrl = `http://localhost:3000/api/alpha-vantage?${params}`;
+                    const timeSeriesRes = await fetch(timeSeriesUrl);
+                    const timeSeriesData = await timeSeriesRes.json();
+
+                    if (timeSeriesData['Error Message'] || timeSeriesData['Note']) {
+                        throw new Error('API limit reached or invalid ticker');
+                    }
+
+                    const timeSeries = timeSeriesData['Time Series (Daily)'];
+                    if (!timeSeries) throw new Error('No data available');
+
+                    const dates = Object.keys(timeSeries).slice(0, 200);
+                    const prices = dates.map(date => parseFloat(timeSeries[date]['4. close']));
+                    const volumes = dates.map(date => parseFloat(timeSeries[date]['5. volume']));
+                    const highs = dates.map(date => parseFloat(timeSeries[date]['2. high']));
+                    const lows = dates.map(date => parseFloat(timeSeries[date]['3. low']));
+
+                    const currentPrice = prices[0];
+                    const rsi = calculateRSI(prices);
+                    const sma20 = calculateSMA(prices, 20);
+                    const sma50 = calculateSMA(prices, 50);
+                    const sma200 = calculateSMA(prices, 200);
+                    const bb = calculateBollingerBands(prices);
+                    const macd = calculateMACD(prices);
+                    const avgVolume = volumes.slice(0, 20).reduce((a, b) => a + b, 0) / 20;
+
+                    const priceChange1d = ((prices[0] - prices[1]) / prices[1]) * 100;
+                    const priceChange5d = ((prices[0] - prices[4]) / prices[4]) * 100;
+                    const priceChange20d = ((prices[0] - prices[19]) / prices[19]) * 100;
+                    const volumeRatio = volumes[0] / avgVolume;
+
+                    const atr = calculateATR(highs.slice(0, 14), lows.slice(0, 14), prices.slice(0, 14));
+                    const recent52High = Math.max(...prices.slice(0, Math.min(252, prices.length)));
+                    const recent52Low = Math.min(...prices.slice(0, Math.min(252, prices.length)));
+                    const distanceFrom52High = ((recent52High - currentPrice) / recent52High) * 100;
+                    const distanceFrom52Low = ((currentPrice - recent52Low) / recent52Low) * 100;
+
+                    addAiLog(`✓ ${ticker} technical data: Price=$${currentPrice.toFixed(2)}, RSI=${rsi.toFixed(1)}, Volume=${volumeRatio.toFixed(2)}x`);
+
+                    const overviewParams = new URLSearchParams({
+                        function: 'OVERVIEW',
+                        symbol: ticker,
+                        apikey: apiKeys.alphaVantage
+                    });
+                    const overviewUrl = `http://localhost:3000/api/alpha-vantage?${overviewParams}`;
+                    const overviewRes = await fetch(overviewUrl);
+                    const overviewData = await overviewRes.json();
+                    const companyName = overviewData.Name || ticker;
+
+                    return {
+                        ticker,
+                        companyName,
+                        currentPrice,
+                        technical: { rsi, sma20, sma50, sma200, bb, macd, atr, recent52High, recent52Low, distanceFrom52High, distanceFrom52Low },
+                        priceAction: { priceChange1d, priceChange5d, priceChange20d, volumeRatio, currentVolume: volumes[0], avgVolume },
+                        rawData: { prices: prices.slice(0, 30), volumes: volumes.slice(0, 30), dates: dates.slice(0, 30) }
+                    };
+                } catch (error) {
+                    addAiLog(`✗ Error fetching ${ticker}: ${error.message}`, 'error');
+                    return null;
+                }
+            };
+
+            // Fetch fundamentals through proxy
+            const fetchFundamentals = async (ticker) => {
+                if (!apiKeys.fmp) {
+                    addAiLog(`⚠ FMP API key not set, skipping fundamentals for ${ticker}`, 'warning');
+                    return null;
+                }
+
+                try {
+                    addAiLog(`📊 Fetching fundamentals for ${ticker}...`);
+                    
+                    const metricsUrl = `http://localhost:3000/api/fmp/key-metrics-ttm/${ticker}?apikey=${apiKeys.fmp}`;
+                    const ratiosUrl = `http://localhost:3000/api/fmp/ratios-ttm/${ticker}?apikey=${apiKeys.fmp}`;
+                    const profileUrl = `http://localhost:3000/api/fmp/profile/${ticker}?apikey=${apiKeys.fmp}`;
+
+                    const [metricsRes, ratiosRes, profileRes] = await Promise.all([
+                        fetch(metricsUrl),
+                        fetch(ratiosUrl),
+                        fetch(profileUrl)
+                    ]);
+
+                    const [metricsData, ratiosData, profileData] = await Promise.all([
+                        metricsRes.json(),
+                        ratiosRes.json(),
+                        profileRes.json()
+                    ]);
+
+                    if (!metricsData[0] || !ratiosData[0] || !profileData[0]) {
+                        throw new Error('Incomplete fundamental data');
+                    }
+
+                    const fundamentals = {
+                        peRatio: ratiosData[0].priceEarningsRatioTTM || null,
+                        priceToBook: ratiosData[0].priceToBookRatioTTM || null,
+                        priceToSales: ratiosData[0].priceToSalesRatioTTM || null,
+                        evToEbitda: metricsData[0].enterpriseValueOverEBITDATTM || null,
+                        grossMargin: ratiosData[0].grossProfitMarginTTM * 100 || null,
+                        operatingMargin: ratiosData[0].operatingProfitMarginTTM * 100 || null,
+                        netMargin: ratiosData[0].netProfitMarginTTM * 100 || null,
+                        roe: ratiosData[0].returnOnEquityTTM * 100 || null,
+                        debtToEquity: ratiosData[0].debtEquityRatioTTM || null,
+                        currentRatio: ratiosData[0].currentRatioTTM || null,
+                        quickRatio: ratiosData[0].quickRatioTTM || null,
+                        marketCap: profileData[0].mktCap || null,
+                        sector: profileData[0].sector || 'Unknown',
+                        industry: profileData[0].industry || 'Unknown',
+                        beta: profileData[0].beta || null,
+                        dividendYield: profileData[0].lastDiv ? (profileData[0].lastDiv / profileData[0].price) * 100 : 0
+                    };
+
+                    addAiLog(`✓ Fundamentals: P/E=${fundamentals.peRatio?.toFixed(2)}, Margin=${fundamentals.netMargin?.toFixed(1)}%, ROE=${fundamentals.roe?.toFixed(1)}%`);
+                    return fundamentals;
+                } catch (error) {
+                    addAiLog(`✗ Error fetching fundamentals: ${error.message}`, 'error');
+                    return null;
+                }
+            };
+
+            // Fetch news through proxy
+            const fetchNewsSentiment = async (ticker, companyName) => {
+                if (!apiKeys.newsApi) {
+                    addAiLog(`⚠ NewsAPI key not set, skipping news for ${ticker}`, 'warning');
+                    return null;
+                }
+
+                try {
+                    addAiLog(`📰 Fetching news for ${ticker}...`);
+                    
+                    const searchQuery = companyName || ticker;
+                    const params = new URLSearchParams({
+                        q: searchQuery,
+                        language: 'en',
+                        sortBy: 'publishedAt',
+                        pageSize: '5',
+                        apiKey: apiKeys.newsApi
+                    });
+                    const newsUrl = `http://localhost:3000/api/news?${params}`;
+                    
+                    const newsRes = await fetch(newsUrl);
+                    const newsData = await newsRes.json();
+
+                    if (newsData.status !== 'ok' || !newsData.articles) {
+                        throw new Error('No news data available');
+                    }
+
+                    const articles = newsData.articles.slice(0, 5).map(article => ({
+                        title: article.title,
+                        description: article.description,
+                        source: article.source.name,
+                        publishedAt: new Date(article.publishedAt).toLocaleDateString(),
+                        url: article.url
+                    }));
+
+                    const positiveWords = ['surge', 'gain', 'profit', 'beat', 'upgrade', 'bullish', 'growth', 'strong', 'rally', 'breakthrough'];
+                    const negativeWords = ['fall', 'loss', 'miss', 'downgrade', 'bearish', 'decline', 'weak', 'lawsuit', 'concern', 'warning'];
+                    
+                    let sentimentScore = 0;
+                    let sentimentReasons = [];
+
+                    articles.forEach(article => {
+                        const text = `${article.title} ${article.description}`.toLowerCase();
+                        positiveWords.forEach(word => {
+                            if (text.includes(word)) {
+                                sentimentScore += 1;
+                                if (!sentimentReasons.includes(word)) sentimentReasons.push(`+${word}`);
+                            }
+                        });
+                        negativeWords.forEach(word => {
+                            if (text.includes(word)) {
+                                sentimentScore -= 1;
+                                if (!sentimentReasons.includes(word)) sentimentReasons.push(`-${word}`);
+                            }
+                        });
+                    });
+
+                    const sentiment = {
+                        score: sentimentScore,
+                        label: sentimentScore > 2 ? 'Very Positive' :
+                               sentimentScore > 0 ? 'Positive' :
+                               sentimentScore === 0 ? 'Neutral' :
+                               sentimentScore > -3 ? 'Negative' : 'Very Negative',
+                        articles,
+                        keywords: sentimentReasons.slice(0, 5)
+                    };
+
+                    addAiLog(`✓ News sentiment: ${sentiment.label} (${articles.length} articles)`);
+                    return sentiment;
+                } catch (error) {
+                    addAiLog(`✗ Error fetching news: ${error.message}`, 'error');
+                    return null;
+                }
+            };
+
+            // AI Analysis with Claude through proxy
+            const analyzeWithClaude = async (stockData, fundamentals, newsSentiment) => {
+                if (!apiKeys.anthropic) {
+                    addAiLog(`✗ Anthropic API key required for AI analysis`, 'error');
+                    return null;
+                }
+
+                addAiLog(`🧠 AI analyzing ${stockData.ticker} with full dataset...`);
+                
+                try {
+                    let prompt = `You are an elite quantitative analyst. Analyze this stock and provide a trading recommendation.
+
+STOCK: ${stockData.ticker} - ${stockData.companyName}
+CURRENT PRICE: $${stockData.currentPrice.toFixed(2)}
+
+TECHNICAL INDICATORS:
+- RSI: ${stockData.technical.rsi.toFixed(2)} ${stockData.technical.rsi < 30 ? '(OVERSOLD)' : stockData.technical.rsi > 70 ? '(OVERBOUGHT)' : ''}
+- Price vs SMA20: ${((stockData.currentPrice / stockData.technical.sma20 - 1) * 100).toFixed(2)}%
+- Price vs SMA50: ${((stockData.currentPrice / stockData.technical.sma50 - 1) * 100).toFixed(2)}%
+- Price vs SMA200: ${((stockData.currentPrice / stockData.technical.sma200 - 1) * 100).toFixed(2)}%
+- Bollinger: ${stockData.currentPrice < stockData.technical.bb.lower ? 'Below Lower Band' : stockData.currentPrice > stockData.technical.bb.upper ? 'Above Upper Band' : 'Within Bands'}
+- Volume Ratio: ${stockData.priceAction.volumeRatio.toFixed(2)}x
+
+PRICE ACTION:
+- 1d: ${stockData.priceAction.priceChange1d.toFixed(2)}%
+- 5d: ${stockData.priceAction.priceChange5d.toFixed(2)}%
+- 20d: ${stockData.priceAction.priceChange20d.toFixed(2)}%
+`;
+
+                    if (fundamentals) {
+                        prompt += `
+FUNDAMENTALS:
+- Sector: ${fundamentals.sector}
+- P/E: ${fundamentals.peRatio?.toFixed(2) || 'N/A'}
+- Net Margin: ${fundamentals.netMargin?.toFixed(1)}%
+- ROE: ${fundamentals.roe?.toFixed(1)}%
+- Debt/Equity: ${fundamentals.debtToEquity?.toFixed(2) || 'N/A'}
+`;
+                    }
+
+                    if (newsSentiment) {
+                        prompt += `
+NEWS SENTIMENT: ${newsSentiment.label}
+Keywords: ${newsSentiment.keywords.join(', ')}
+`;
+                    }
+
+                    prompt += `
+Requirements:
+- Min probability: 65%
+- Min risk/reward: 2:1
+- Clear LONG or SHORT direction
+
+Respond ONLY with JSON (no markdown):
+{
+  "trade": true/false,
+  "direction": "LONG"/"SHORT"/"NONE",
+  "probability": 50-95,
+  "entry": number,
+  "stopLoss": number,
+  "target": number,
+  "strategy": "Mean Reversion"/"Momentum Breakout"/"Relative Strength",
+  "thesis": "25-35 word explanation",
+  "keyFactors": ["factor1", "factor2", "factor3"],
+  "riskReward": number,
+  "confidence": "HIGH"/"MEDIUM"/"LOW",
+  "fundamentalQuality": "STRONG"/"MODERATE"/"WEAK"/"UNKNOWN",
+  "catalysts": ["catalyst1", "catalyst2"]
+}`;
+
+                    const response = await fetch("http://localhost:3000/api/claude", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            apiKey: apiKeys.anthropic,
+                            model: "claude-sonnet-4-5-20250129",
+                            max_tokens: 1500,
+                            messages: [{ role: "user", content: prompt }]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Claude API error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    let aiResponse = data.content[0].text;
+                    aiResponse = aiResponse.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+                    
+                    const analysis = JSON.parse(aiResponse);
+                    addAiLog(`✓ AI analysis: ${analysis.trade ? '✅ TRADE' : '❌ NO TRADE'} (${analysis.probability}%)`);
+                    
+                    return analysis;
+                } catch (error) {
+                    addAiLog(`✗ AI analysis failed: ${error.message}`, 'error');
+                    return null;
+                }
+            };
+
+            // Main scan function
+            const scanMarket = async () => {
+                if (!apiKeys.alphaVantage) {
+                    alert('Please add your Alpha Vantage API key in Settings');
+                    return;
+                }
+                if (!apiKeys.anthropic) {
+                    alert('Please add your Anthropic API key in Settings for AI analysis');
+                    return;
+                }
+                if (proxyStatus !== 'connected') {
+                    alert('⚠️ Proxy server not running!\n\nPlease start the proxy server first:\nnode proxy-server.js');
+                    return;
+                }
+
+                setLoading(true);
+                setScanProgress(0);
+                setAiLogs([]);
+                const allSignals = [];
+
+                addAiLog('🚀 Starting comprehensive AI market scan...', 'info');
+                addAiLog(`📊 Analyzing ${watchlist.length} stocks with Technical + Fundamental + Sentiment data`, 'info');
+
+                for (let i = 0; i < watchlist.length; i++) {
+                    const ticker = watchlist[i];
+                    setScanProgress(((i + 1) / watchlist.length) * 100);
+                    
+                    addAiLog(`\n━━━━━ [${i + 1}/${watchlist.length}] ${ticker} ━━━━━`, 'header');
+                    
+                    const stockData = await fetchMarketData(ticker);
+                    if (!stockData) {
+                        await new Promise(resolve => setTimeout(resolve, 12000));
+                        continue;
+                    }
+
+                    const fundamentals = await fetchFundamentals(ticker);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    const newsSentiment = await fetchNewsSentiment(ticker, stockData.companyName);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    const aiAnalysis = await analyzeWithClaude(stockData, fundamentals, newsSentiment);
+                    if (!aiAnalysis || !aiAnalysis.trade) {
+                        addAiLog(`⊘ ${ticker} - No trade signal`, 'skip');
+                        await new Promise(resolve => setTimeout(resolve, 12000));
+                        continue;
+                    }
+
+                    const riskAmount = portfolio.capital * (portfolio.riskPerTrade / 100);
+                    const priceDistance = Math.abs(aiAnalysis.entry - aiAnalysis.stopLoss);
+                    const shares = Math.floor(riskAmount / priceDistance);
+                    const positionSize = shares * aiAnalysis.entry;
+
+                    const signal = {
+                        ticker: stockData.ticker,
+                        companyName: stockData.companyName,
+                        direction: aiAnalysis.direction,
+                        price: stockData.currentPrice.toFixed(2),
+                        entry: aiAnalysis.entry.toFixed(2),
+                        stopLoss: aiAnalysis.stopLoss.toFixed(2),
+                        target: aiAnalysis.target.toFixed(2),
+                        rsi: stockData.technical.rsi.toFixed(1),
+                        probability: aiAnalysis.probability,
+                        riskReward: aiAnalysis.riskReward.toFixed(2),
+                        strategy: aiAnalysis.strategy,
+                        thesis: aiAnalysis.thesis,
+                        keyFactors: aiAnalysis.keyFactors,
+                        confidence: aiAnalysis.confidence,
+                        fundamentalQuality: aiAnalysis.fundamentalQuality,
+                        catalysts: aiAnalysis.catalysts || [],
+                        positionSize: positionSize.toFixed(2),
+                        shares,
+                        risk: riskAmount.toFixed(2),
+                        sector: fundamentals?.sector || 'Unknown',
+                        fundamentals,
+                        newsSentiment
+                    };
+
+                    allSignals.push(signal);
+                    addAiLog(`✅ ${ticker} - TRADE SIGNAL! ${aiAnalysis.direction} @ ${aiAnalysis.entry}`, 'success');
+
+                    await new Promise(resolve => setTimeout(resolve, 12000));
+                }
+
+                allSignals.sort((a, b) => b.probability - a.probability);
+                const topSignals = allSignals.slice(0, 5);
+
+                setSignals(topSignals);
+                setLoading(false);
+                setScanProgress(0);
+                
+                addAiLog(`\n🎯 Scan complete! Found ${allSignals.length} signals, showing top 5`, 'success');
+            };
+
+            const addToWatchlist = () => {
+                if (newTicker && !watchlist.includes(newTicker.toUpperCase())) {
+                    setWatchlist([...watchlist, newTicker.toUpperCase()]);
+                    setNewTicker('');
+                }
+            };
+
+            const removeFromWatchlist = (ticker) => {
+                setWatchlist(watchlist.filter(t => t !== ticker));
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-6">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Proxy Status Banner */}
+                        {proxyStatus !== 'connected' && (
+                            <div className="mb-4 bg-red-500/20 border border-red-500 rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                    <AlertCircle className="h-6 w-6 text-red-400" />
+                                    <div>
+                                        <div className="font-bold text-red-300">Proxy Server Not Running</div>
+                                        <div className="text-sm text-red-200">Please start the proxy server: <code className="bg-black/30 px-2 py-1 rounded">node proxy-server.js</code></div>
+                                    </div>
+                                    <button 
+                                        onClick={checkProxyServer}
+                                        className="ml-auto bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm font-semibold"
+                                    >
+                                        Check Again
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Header */}
+                        <div className="mb-8">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
+                                        <Brain />
+                                        AI Trading Agent Pro
+                                    </h1>
+                                    <p className="text-gray-400">Multi-dimensional analysis: Technical + Fundamental + Sentiment</p>
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${proxyStatus === 'connected' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                                        <span className="text-xs text-gray-500">
+                                            Proxy: {proxyStatus === 'connected' ? 'Connected' : proxyStatus === 'checking' ? 'Checking...' : 'Disconnected'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
+                                        <div className="text-sm text-gray-400">Portfolio</div>
+                                        <div className="text-2xl font-bold text-green-400">${portfolio.capital}</div>
+                                    </div>
+                                    <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
+                                        <div className="text-sm text-gray-400">Risk/Trade</div>
+                                        <div className="text-2xl font-bold text-yellow-400">{portfolio.riskPerTrade}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex gap-4 mb-6">
+                            <button
+                                onClick={() => setActiveTab('signals')}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                    activeTab === 'signals' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800'
+                                }`}
+                            >
+                                <span className="inline-flex items-center gap-2"><Activity /> AI Signals</span>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('logs')}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                    activeTab === 'logs' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800'
+                                }`}
+                            >
+                                <span className="inline-flex items-center gap-2"><Brain /> AI Logs</span>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('watchlist')}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                    activeTab === 'watchlist' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800'
+                                }`}
+                            >
+                                <span className="inline-flex items-center gap-2"><Target /> Watchlist</span>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('settings')}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                                    activeTab === 'settings' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800'
+                                }`}
+                            >
+                                <span className="inline-flex items-center gap-2"><Settings /> Settings</span>
+                            </button>
+                        </div>
+
+                        {/* Settings Tab */}
+                        {activeTab === 'settings' && (
+                            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+                                <h2 className="text-2xl font-bold mb-6">Configuration</h2>
+                                
+                                <div className="space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-4 text-purple-400">API Keys</h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm text-gray-400 mb-2">
+                                                    <span className="text-red-400">*</span> Alpha Vantage API Key (Required)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={apiKeys.alphaVantage}
+                                                    onChange={(e) => setApiKeys({...apiKeys, alphaVantage: e.target.value})}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                                                    placeholder="Enter your Alpha Vantage key"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">Get free: https://www.alphavantage.co/support/#api-key</p>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm text-gray-400 mb-2">
+                                                    <span className="text-red-400">*</span> Anthropic API Key (Required for AI)
+                                                </label>
+                                                <input
+                                                    type="password"
+                                                    value={apiKeys.anthropic}
+                                                    onChange={(e) => setApiKeys({...apiKeys, anthropic: e.target.value})}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                                                    placeholder="sk-ant-..."
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">Get key: https://console.anthropic.com/ (~$10-15/month usage)</p>
+                                            </div>
+                                            
+                                            <div>
+                                                <label className="block text-sm text-gray-400 mb-2">
+                                                    <BarChart3 className="inline h-4 w-4 mr-1" />
+                                                    Financial Modeling Prep API Key (Recommended)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={apiKeys.fmp}
+                                                    onChange={(e) => setApiKeys({...apiKeys, fmp: e.target.value})}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                                                    placeholder="Enter your FMP key"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">Get free: https://site.financialmodelingprep.com/developer</p>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm text-gray-400 mb-2">
+                                                    <Newspaper className="inline h-4 w-4 mr-1" />
+                                                    NewsAPI Key (Recommended)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={apiKeys.newsApi}
+                                                    onChange={(e) => setApiKeys({...apiKeys, newsApi: e.target.value})}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                                                    placeholder="Enter your NewsAPI key"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">Get free: https://newsapi.org/register</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-4 text-purple-400">Portfolio Settings</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-gray-400 mb-2">Capital ($)</label>
+                                                <input
+                                                    type="number"
+                                                    value={portfolio.capital}
+                                                    onChange={(e) => setPortfolio({...portfolio, capital: parseFloat(e.target.value)})}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-gray-400 mb-2">Risk Per Trade (%)</label>
+                                                <input
+                                                    type="number"
+                                                    value={portfolio.riskPerTrade}
+                                                    onChange={(e) => setPortfolio({...portfolio, riskPerTrade: parseFloat(e.target.value)})}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                                                    step="0.5"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                                        <div className="flex gap-3">
+                                            <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                                            <div className="text-sm text-yellow-200">
+                                                <strong>Important:</strong> Make sure proxy server is running (node proxy-server.js). Run scans after market close. Start with paper trading!
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Watchlist Tab */}
+                        {activeTab === 'watchlist' && (
+                            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold">Watchlist - {watchlist.length} Stocks</h2>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newTicker}
+                                            onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
+                                            onKeyPress={(e) => e.key === 'Enter' && addToWatchlist()}
+                                            placeholder="Add ticker"
+                                            className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                                        />
+                                        <button onClick={addToWatchlist} className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-semibold">
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-6 gap-3">
+                                    {watchlist.map(ticker => (
+                                        <div key={ticker} className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-mono font-bold text-lg">{ticker}</span>
+                                                <button
+                                                    onClick={() => removeFromWatchlist(ticker)}
+                                                    className="text-red-400 hover:text-red-300 text-sm"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* AI Logs Tab */}
+                        {activeTab === 'logs' && (
+                            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+                                <h2 className="text-2xl font-bold mb-6">AI Analysis Logs</h2>
+                                <div className="bg-slate-900 rounded-lg p-4 font-mono text-sm max-h-[600px] overflow-y-auto">
+                                    {aiLogs.length === 0 ? (
+                                        <div className="text-gray-500 text-center py-8">No logs yet. Run a scan to see AI analysis.</div>
+                                    ) : (
+                                        aiLogs.map((log, idx) => (
+                                            <div key={idx} className={`mb-2 ${
+                                                log.type === 'error' ? 'text-red-400' :
+                                                log.type === 'success' ? 'text-green-400' :
+                                                log.type === 'header' ? 'text-purple-400 font-bold text-base' :
+                                                log.type === 'skip' ? 'text-gray-500' :
+                                                log.type === 'warning' ? 'text-yellow-400' :
+                                                'text-gray-300'
+                                            }`}>
+                                                <span className="text-gray-600">[{log.timestamp}]</span> {log.message}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Signals Tab */}
+                        {activeTab === 'signals' && (
+                            <>
+                                <div className="mb-6">
+                                    <button
+                                        onClick={scanMarket}
+                                        disabled={loading}
+                                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-4 px-8 rounded-xl transition-all flex items-center justify-center gap-3"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <RefreshCw className="animate-spin" />
+                                                AI Analyzing... {scanProgress.toFixed(0)}%
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Brain />
+                                                Start AI Market Scan
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {signals.length > 0 && (
+                                    <div className="space-y-4">
+                                        <h2 className="text-2xl font-bold mb-4">Top 5 AI Signals</h2>
+                                        {signals.map((signal, idx) => (
+                                            <div key={signal.ticker} className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="text-4xl font-bold text-purple-400">#{idx + 1}</div>
+                                                        <div>
+                                                            <div className="flex items-center gap-3 mb-1">
+                                                                <span className="text-2xl font-bold">{signal.ticker}</span>
+                                                                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                                                    signal.direction === 'LONG' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                                                }`}>
+                                                                    {signal.direction === 'LONG' ? <><TrendingUp className="inline" /> LONG</> : <><TrendingDown className="inline" /> SHORT</>}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm text-gray-400">{signal.companyName}</div>
+                                                            <div className="text-xs text-gray-500">{signal.sector} • {signal.strategy}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-3xl font-bold text-green-400">{signal.probability}%</div>
+                                                        <div className="text-sm text-gray-400">Probability</div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-4">
+                                                    <div className="text-sm text-gray-200">{signal.thesis}</div>
+                                                    <div className="flex gap-2 mt-2 flex-wrap">
+                                                        {signal.keyFactors.map((factor, i) => (
+                                                            <span key={i} className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">{factor}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-4 gap-4 mb-4">
+                                                    <div className="bg-slate-900/50 rounded-lg p-3">
+                                                        <div className="text-xs text-gray-400 mb-1">Entry</div>
+                                                        <div className="text-lg font-bold">${signal.entry}</div>
+                                                    </div>
+                                                    <div className="bg-slate-900/50 rounded-lg p-3">
+                                                        <div className="text-xs text-gray-400 mb-1">Stop Loss</div>
+                                                        <div className="text-lg font-bold text-red-400">${signal.stopLoss}</div>
+                                                    </div>
+                                                    <div className="bg-slate-900/50 rounded-lg p-3">
+                                                        <div className="text-xs text-gray-400 mb-1">Target</div>
+                                                        <div className="text-lg font-bold text-green-400">${signal.target}</div>
+                                                    </div>
+                                                    <div className="bg-slate-900/50 rounded-lg p-3">
+                                                        <div className="text-xs text-gray-400 mb-1">R:R</div>
+                                                        <div className="text-lg font-bold text-blue-400">{signal.riskReward}:1</div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-3 gap-4 mb-4">
+                                                    <div className="bg-purple-500/10 rounded-lg p-3 border border-purple-500/30">
+                                                        <div className="text-xs text-purple-300 mb-1">Position Size</div>
+                                                        <div className="text-lg font-bold">${signal.positionSize}</div>
+                                                        <div className="text-xs text-gray-400">{signal.shares} shares</div>
+                                                    </div>
+                                                    <div className="bg-yellow-500/10 rounded-lg p-3 border border-yellow-500/30">
+                                                        <div className="text-xs text-yellow-300 mb-1">Risk Amount</div>
+                                                        <div className="text-lg font-bold">${signal.risk}</div>
+                                                    </div>
+                                                    <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/30">
+                                                        <div className="text-xs text-blue-300 mb-1">RSI</div>
+                                                        <div className="text-lg font-bold">{signal.rsi}</div>
+                                                    </div>
+                                                </div>
+
+                                                {signal.fundamentals && (
+                                                    <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3 mb-4">
+                                                        <div className="text-xs font-semibold text-green-300 mb-2">
+                                                            <BarChart3 className="inline h-3 w-3 mr-1" />
+                                                            FUNDAMENTALS
+                                                        </div>
+                                                        <div className="grid grid-cols-4 gap-2 text-xs">
+                                                            <div><span className="text-gray-400">P/E:</span> <span className="text-white ml-1">{signal.fundamentals.peRatio?.toFixed(1) || 'N/A'}</span></div>
+                                                            <div><span className="text-gray-400">Margin:</span> <span className="text-white ml-1">{signal.fundamentals.netMargin?.toFixed(1)}%</span></div>
+                                                            <div><span className="text-gray-400">ROE:</span> <span className="text-white ml-1">{signal.fundamentals.roe?.toFixed(1)}%</span></div>
+                                                            <div><span className="text-gray-400">D/E:</span> <span className="text-white ml-1">{signal.fundamentals.debtToEquity?.toFixed(2) || 'N/A'}</span></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {signal.newsSentiment && (
+                                                    <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3">
+                                                        <div className="text-xs font-semibold text-blue-300 mb-2">
+                                                            <Newspaper className="inline h-3 w-3 mr-1" />
+                                                            NEWS SENTIMENT: {signal.newsSentiment.label}
+                                                        </div>
+                                                        <div className="flex gap-1 flex-wrap">
+                                                            {signal.newsSentiment.keywords.slice(0, 3).map((kw, i) => (
+                                                                <span key={i} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded">{kw}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {signals.length === 0 && !loading && (
+                                    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-12 border border-purple-500/20 text-center">
+                                        <Brain />
+                                        <h3 className="text-xl font-semibold text-gray-400 mb-2 mt-4">AI Agent Ready</h3>
+                                        <p className="text-gray-500">Configure your API keys in Settings and start the proxy server, then start scanning</p>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AITradingAgent />);
+    </script>
+</body>
+</html>
