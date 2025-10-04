@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -8,6 +9,11 @@ const PORT = 3000;
 // Enable CORS for all origins
 app.use(cors());
 app.use(express.json());
+
+// Serve the HTML file at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'ai-trading-agent.html'));
+});
 
 // Log all requests
 app.use((req, res, next) => {
